@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ListingItem from '../components/ListingItem'
 
 export default function Search() {
     const navigate = useNavigate()
@@ -16,7 +17,7 @@ export default function Search() {
     const [listings, setListings] = useState([])
 
     console.log(listings);
-    
+
 
     useEffect(() => {
         const urlParams = new URLSearchParams(location.search)
@@ -28,11 +29,11 @@ export default function Search() {
         const sortFromUrl = urlParams.get('sort')
         const orderFromUrl = urlParams.get('order')
 
-        if(searchTermFromUrl || typeFromUrl || parkingFromUrl || furnishedFromUrl || offerFromUrl || sortFromUrl || orderFromUrl){
+        if (searchTermFromUrl || typeFromUrl || parkingFromUrl || furnishedFromUrl || offerFromUrl || sortFromUrl || orderFromUrl) {
             setSidebarData({
                 searchTerm: searchTermFromUrl || '',
                 type: typeFromUrl || 'all',
-                parking: parkingFromUrl ===  'true' ? true : false,
+                parking: parkingFromUrl === 'true' ? true : false,
                 furnished: furnishedFromUrl === 'true' ? true : false,
                 offer: offerFromUrl === 'true' ? true : false,
                 sort: sortFromUrl || 'created_at',
@@ -138,8 +139,19 @@ export default function Search() {
 
                 </form>
             </div>
-            <div className=''>
-                <h1 className='text-3xl font-semibold border-b text-slate-700 mt-5'>Listing Results</h1>
+            <div className='flex-1'>
+                <h1 className='text-3xl font-semibold border-b pl-4 pb-4 text-slate-700 mt-5'>Listing Results</h1>
+                <div className="p-7 flex flex-wrap gap-4">
+                    {!loading && listings.length === 0 && (
+                        <p className='text-xl text-slate-700'>No listing found!</p>
+                    )}
+                    {loading && (
+                        <p className="text-xl text-slate-700 text-center w-full">Loading...</p>
+                    )}
+                    {!loading && listings && listings.map(listing => (
+                        <ListingItem key={listing._id} listing={listing} />
+                    ))}
+                </div>
             </div>
         </div>
     )
