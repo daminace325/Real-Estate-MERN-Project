@@ -94,7 +94,7 @@ export default function Home() {
 								Show More Offers...
 							</Link>
 						</div>
-						<div className="flex gap-4">
+						<div className="flex flex-wrap gap-4 justify-between">
 							{offerListings.map((listing) => (
 								<ListingItem listing={listing} key={listing._id} />
 							))}
@@ -109,7 +109,7 @@ export default function Home() {
 								Show More Places for Rent...
 							</Link>
 						</div>
-						<div className="flex gap-4">
+						<div className="flex flex-wrap gap-4 justify-between">
 							{rentListings.map((listing) => (
 								<ListingItem listing={listing} key={listing._id} />
 							))}
@@ -124,9 +124,9 @@ export default function Home() {
 								Show More Places for Sale...
 							</Link>
 						</div>
-						<div className="flex gap-4">
+						<div className="flex flex-wrap gap-4 justify-evenly lg:justify-between">
 							{saleListings.map((listing) => (
-								<ListingItem listing={listing} key={listing._id} />
+								<ListingItem key={listing.id} listing={listing} />
 							))}
 						</div>
 					</div>
