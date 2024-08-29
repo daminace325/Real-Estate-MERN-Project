@@ -126,7 +126,7 @@ export default function Home() {
 						</div>
 						<div className="flex flex-wrap gap-4 justify-evenly lg:justify-between">
 							{saleListings.map((listing) => (
-								<ListingItem key={listing.id} listing={listing} />
+								<ListingItem listing={listing} key={listing._id}/>
 							))}
 						</div>
 					</div>
