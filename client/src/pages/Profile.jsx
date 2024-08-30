@@ -73,7 +73,7 @@ export default function Profile() {
 			dispatch(updateUserSucess(data))
 			setUpdateSuccess(true)
 		} catch (error) {
-			dispatch(updateUserFaliure(error.messgae))
+			dispatch(updateUserFaliure(error.message))
 		}
 	}
 
