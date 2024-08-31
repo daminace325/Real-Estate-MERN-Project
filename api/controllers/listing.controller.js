@@ -18,7 +18,7 @@ export const deleteListing = async (req, res, next) => {
         return next(errorHandler(404, "No Listing found!"))
     }
 
-    if (req.user.id !== listing.userRef) {
+    if (req.user.id !== listing.userRef && !req.user.isAdmin) {
         return next(errorHandler(404, "You can only delete your own listings!"))
     }
 
@@ -34,15 +34,12 @@ export const deleteListing = async (req, res, next) => {
 
 export const updateListing = async (req, res, next) => {
     const listing = await Listing.findById(req.params.id)
-
     if (!listing) {
         return next(errorHandler(404, 'Listing not found!'))
     }
-
-    if (req.user.id !== listing.userRef) {
+    if (req.user.id !== listing.userRef && !req.user.isAdmin) {
         return next(errorHandler(404, 'You can only update your own listing!'))
     }
-
     try {
         const updatedListing = await Listing.findByIdAndUpdate(
             req.params.id,

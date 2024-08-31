@@ -19,14 +19,16 @@ const userSlice = createSlice({
             state.error = null
         },
         signInFaliure: (state, action) => {
-            state.error = action.payload 
+            state.error = action.payload
             state.loading = false
         },
         updateUserStart: (state) => {
             state.loading = true
         },
         updateUserSucess: (state, action) => {
-            state.currentUser = action.payload
+            if (state.currentUser._id === action.payload._id) {
+                state.currentUser = action.payload;
+            }
             state.loading = false
             state.error = null
         },
@@ -37,8 +39,10 @@ const userSlice = createSlice({
         deleteUserStart: (state) => {
             state.loading = true
         },
-        deleteUserSuccess: (state) => {
-            state.currentUser = null
+        deleteUserSuccess: (state, action) => {
+            if (state.currentUser._id === action.payload._id) {
+                state.currentUser = null
+            }
             state.loading = false
             state.error = null
         },
@@ -57,12 +61,24 @@ const userSlice = createSlice({
         signOutUserFaliure: (state, action) => {
             state.error = action.payload
             state.loading = false
+        },
+        fetchUsersStart: (state) => {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchUsersSuccess: (state, action) => {
+            state.users = action.payload;
+            state.loading = false;
+        },
+        fetchUsersFailure: (state, action) => {
+            state.error = action.payload;
+            state.loading = false;
         }
     }
 })
 
 
 
-export const { signInStart, signInSuccess, signInFaliure, updateUserFaliure, updateUserStart, updateUserSucess, deleteUserFaliure, deleteUserStart, deleteUserSuccess, signOutUserFaliure, signOutUserStart, signOutUserSuccess } = userSlice.actions
+export const { signInStart, signInSuccess, signInFaliure, updateUserFaliure, updateUserStart, updateUserSucess, deleteUserFaliure, deleteUserStart, deleteUserSuccess, signOutUserFaliure, signOutUserStart, signOutUserSuccess, fetchUsersFailure, fetchUsersStart, fetchUsersSuccess } = userSlice.actions
 
 export default userSlice.reducer

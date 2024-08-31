@@ -33,7 +33,7 @@ export default function CreateListing() {
             const listingId = params.listingId
             const res = await fetch(`/api/listing/get/${listingId}`)
             const data = await res.json()
-            if(data.success === false){
+            if (data.success === false) {
                 console.log(data.message);
             }
             setFormData(data)
@@ -131,16 +131,19 @@ export default function CreateListing() {
             if (+formData.regularPrice < +formData.discountPrice) return setError('Discount Price must be lower than regular price')
             setLoading(true)
             setError(false)
+            const bodyData = { ...formData };
+            if (currentUser.isAdmin) {
+                delete bodyData.userRef;
+            } else {
+                bodyData.userRef = currentUser._id;
+            }
             const res = await fetch(`/api/listing/update/${params.listingId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    ...formData,
-                    userRef: currentUser._id
-                })
-            })
+                body: JSON.stringify(bodyData)
+            });
             const data = await res.json()
             setLoading(false)
             if (data.success === false) {
@@ -152,7 +155,6 @@ export default function CreateListing() {
             setError(error.message)
             setLoading(false)
         }
-
     }
 
     return (

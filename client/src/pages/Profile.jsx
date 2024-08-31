@@ -4,7 +4,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { getStorage, uploadBytesResumable, ref, getDownloadURL } from 'firebase/storage'
 import { app } from '../firebase.js'
 import { deleteUserFaliure, deleteUserStart, deleteUserSuccess, signOutUserFaliure, signOutUserStart, signOutUserSuccess, updateUserFaliure, updateUserStart, updateUserSucess } from '../redux/user/userSlice.js'
-import { Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 
 export default function Profile() {
@@ -18,14 +19,46 @@ export default function Profile() {
 	const [formData, setFormData] = useState({})
 	const [showListingsError, setShowListingsError] = useState(false)
 	const [userListings, setUserListings] = useState([])
-
+	const { userId } = useParams()
 	const dispatch = useDispatch()
+	const navigate = useNavigate()
+
+
+	const isAdminProfile = userId && currentUser && currentUser.isAdmin
 
 	useEffect(() => {
 		if (file) {
 			handleFileUpload(file)
 		}
 	}, [file])
+
+	useEffect(() => {
+		const fetchUserProfile = async (userId) => {
+			try {
+				const res = await fetch(`/api/user/${userId}`);
+				const data = await res.json();
+				console.log(data);
+
+				if (data.success === false) {
+					console.log(data.message);
+					return;
+				}
+				setFormData(data);
+			} catch (error) {
+				console.log(error.message);
+			}
+		};
+
+		if (isAdminProfile) {
+			fetchUserProfile(userId);
+		} else {
+			setFormData({
+				username: currentUser.username,
+				email: currentUser.email,
+				avatar: currentUser.avatar
+			});
+		}
+	}, [isAdminProfile, userId, currentUser]);
 
 	const handleFileUpload = (file) => {
 		const storage = getStorage(app)
@@ -55,10 +88,9 @@ export default function Profile() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault()
-
 		try {
 			dispatch(updateUserStart())
-			const res = await fetch(`/api/user/update/${currentUser._id}`, {
+			const res = await fetch(userId ? `/api/user/update/${userId}` : `/api/user/update/${currentUser._id}`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -68,6 +100,11 @@ export default function Profile() {
 			const data = await res.json()
 			if (data.success === false) {
 				dispatch(updateUserFaliure(data.message))
+				return
+			}
+			if (userId && userId !== currentUser._id) {
+				dispatch(updateUserSucess({}))
+				setUpdateSuccess(true)
 				return
 			}
 			dispatch(updateUserSucess(data))
@@ -81,16 +118,21 @@ export default function Profile() {
 	const handleDeleteUser = async () => {
 		try {
 			dispatch(deleteUserStart())
-			const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+			const res = await fetch(userId ? `/api/user/delete/${userId}` : `/api/user/delete/${currentUser._id}`, {
 				method: 'DELETE'
 			})
 			const data = await res.json()
-
 			if (data.success === false) {
 				dispatch(deleteUserFaliure(data.message))
 				return
 			}
-			dispatch(deleteUserSuccess(data))
+			dispatch(deleteUserSuccess(userId ? {} : { _id: currentUser._id }));
+			if (userId && userId !== currentUser._id) {
+				navigate('/admin/dashboard');
+			} else {
+				navigate('/login')
+			}
+			setUpdateSuccess(true)
 		} catch (error) {
 			dispatch(deleteUserFaliure(error.message))
 		}
@@ -115,12 +157,13 @@ export default function Profile() {
 	const handleShowListings = async () => {
 		try {
 			setShowListingsError(false)
-			const res = await fetch(`/api/user/listings/${currentUser._id}`)
+			const res = await fetch(userId ? `/api/user/listings/${userId}` : `/api/user/listings/${currentUser._id}`)
 			const data = await res.json()
 			if (data.success === false) {
 				setShowListingsError(true)
 				return
 			}
+			console.log(data);
 			setUserListings(data)
 		} catch (error) {
 			setShowListingsError(true)
@@ -137,7 +180,6 @@ export default function Profile() {
 				console.log(data.message);
 				return
 			}
-
 			setUserListings((prev) => prev.filter((listing) => listing._id !== listingId))
 		} catch (error) {
 			console.log(error.message);
@@ -167,33 +209,37 @@ export default function Profile() {
 						''
 					)}
 				</p>
-				<input type='text' placeholder='Username' id='username' defaultValue={currentUser.username} onChange={handleChange} className='border p-3 rounded-lg' />
-				<input type='text' placeholder='E-mail' id='email' defaultValue={currentUser.email} onChange={handleChange} className='border p-3 rounded-lg' />
+				<input type='text' placeholder='Username' id='username' defaultValue={formData.username} onChange={handleChange} className='border p-3 rounded-lg' />
+				<input type='text' placeholder='E-mail' id='email' defaultValue={formData.email} onChange={handleChange} className='border p-3 rounded-lg' />
 				<input type='password' placeholder='Password' id='password' onChange={handleChange} className='border p-3 rounded-lg' />
 				<button disabled={loading} className='bg-sky-600 rounded-lg p-3 text-white uppercase hover:opacity-95 disabled:opacity-75'>
-					{
-						loading ? 'Loading...' : 'Update'
-					}
+					{loading ? 'Loading...' : 'Update'}
 				</button>
-				<Link to={"/create-listing"} className='bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-90'>
-					Create Listing
-				</Link>
+				{currentUser.isAdmin ? '' : (
+					<Link to={"/create-listing"} className='bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-90'>
+						Create Listing
+					</Link>
+				)}
 			</form>
-			<div className='flex justify-between mt-5'>
+			{userId ? (<div className='flex justify-around mt-5'>
+				<span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>Delete Account</span>
+			</div>) : (<div className='flex justify-between mt-5'>
 				<span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>Delete Account</span>
 				<span onClick={handleSignOut} className='text-red-700 cursor-pointer'>Sign Out</span>
-			</div>
+			</div>)}
+
+
 			<p className='text-red-700 mt-5'>{error ? error : ''}</p>
 			<p className='text-green-700 mt-5'>{updateSuccess ? 'User Updated Succesfully' : ''}</p>
-			<button onClick={handleShowListings} className='text-green-700 w-full'>Show Listing</button>
+			{!userId && currentUser.isAdmin ? '' : (<button onClick={handleShowListings} className='text-green-700 w-full'>Show Listing</button>)}
 			<p className='text-red-700 mt-5'>
-				{
-					showListingsError ? 'Error in showing listings' : ''
-				}
+				{showListingsError ? 'Error in showing listings' : ''}
 			</p>
 			{userListings && userListings.length > 0 &&
 				<div className='flex flex-col gap-4'>
-					<h1 className='text-center text-2xl font-semibold'>Your Listings</h1>
+					<h1 className='text-center text-2xl font-semibold'>
+						{currentUser.isAdmin ? 'User' : 'Your'} Listings
+					</h1>
 					{userListings.map((listing) => <div key={listing._id} className='border rounded-lg p-3 flex justify-between items-center gap-4'>
 						<Link to={`/listing/${listing._id}`}>
 							<img src={listing.imageUrls[0]} alt="listing cover" className='h-16 w-16 object-contain' />
@@ -204,7 +250,7 @@ export default function Profile() {
 						<div className='flex flex-col items-center'>
 							<button onClick={() => handleListingDelete(listing._id)} className='text-red-700 uppercase'>Delete</button>
 							<Link to={`/update-listing/${listing._id}`} >
-						    <button className='text-green-700 uppercase'>Edit</button>
+								<button className='text-green-700 uppercase'>Edit</button>
 							</Link>
 						</div>
 					</div>)}
