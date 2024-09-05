@@ -41,7 +41,7 @@ export default function AdminDashboard() {
 						<Link 
 							to={`/admin/profile/${user._id}`} 
 							key={user._id} 
-							className='border p-4 rounded-lg shadow-md transition-transform transform hover:scale-105 duration-300'
+							className='border p-4 rounded-lg shadow-md hover:shadow-2xl transition-transform transform hover:opacity-75 duration-300'
 						>
 							<img
 								src={user.avatar}
