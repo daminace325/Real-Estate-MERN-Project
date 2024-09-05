@@ -4,7 +4,7 @@ import { MdLocationOn } from 'react-icons/md'
 
 export default function ListingItem({ listing }) {
     return (
-        <Link to={`/listing/${listing._id}`}  className='bg-white shadow-md hover:shadow-2xl transition-all ease-in-out rounded-lg w-full sm:w-[270px] hover:opacity-70'>
+        <Link to={`/listing/${listing._id}`}  className='bg-white shadow-md hover:shadow-2xl transition-all ease-in-out rounded-lg w-full opacity-85 sm:w-[270px] hover:opacity-100'>
                 <img src={listing.imageUrls[0]} alt="listing cover" className='h-[320px] sm:h-[220px] w-full object-cover rounded-lg' />
             <div className="p-3 flex flex-col gap-2 w-full">
                 <p className="truncate  text-lg font-semibold text-slate-700">{listing.name}</p>
