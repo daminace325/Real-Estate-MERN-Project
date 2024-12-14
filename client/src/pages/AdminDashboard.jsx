@@ -30,18 +30,24 @@ export default function AdminDashboard() {
 
 	return (
 		<div className='p-4'>
-			<h1 className='text-3xl font-semibold mb-6'>Dashboard</h1>
+			<h1 className='text-3xl font-semibold mb-6 text-center'>Admin Dashboard</h1>
 			{loading ? (
-				<p>Loading...</p>
+				<div className="flex justify-center items-center h-32">
+					<img
+						src="https://global.discourse-cdn.com/sitepoint/original/3X/e/3/e352b26bbfa8b233050087d6cb32667da3ff809c.gif"
+						alt="Loading..."
+						className="h-8 w-8 inline-block animate-spin"
+					/>
+				</div>
 			) : error ? (
 				<p className='text-red-500'>Error: {error}</p>
 			) : (
 				<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 duration-300 lg:grid-cols-4 gap-4'>
 					{users.map((user) => (
-						<Link 
-							to={`/admin/profile/${user._id}`} 
-							key={user._id} 
-							className='border p-4 rounded-lg shadow-md hover:shadow-2xl transition-transform transform hover:opacity-75 duration-300'
+						<Link
+							to={`/admin/profile/${user._id}`}
+							key={user._id}
+							className='border p-4 rounded-lg shadow-md transition-all opacity-85 ease-in-out hover:shadow-2xl hover:opacity-100'
 						>
 							<img
 								src={user.avatar}

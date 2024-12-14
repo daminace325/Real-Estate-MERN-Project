@@ -23,6 +23,8 @@ export default function Profile() {
 	const dispatch = useDispatch()
 	const navigate = useNavigate()
 
+	const [showListings, setShowListings] = useState(false)
+	const [listingsLoading, setListingsLoading] = useState(false); // Add this line to track loading state
 
 	const isAdminProfile = userId && currentUser && currentUser.isAdmin
 
@@ -156,17 +158,24 @@ export default function Profile() {
 
 	const handleShowListings = async () => {
 		try {
-			setShowListingsError(false)
-			const res = await fetch(userId ? `/api/user/listings/${userId}` : `/api/user/listings/${currentUser._id}`)
-			const data = await res.json()
-			if (data.success === false) {
-				setShowListingsError(true)
-				return
+			setListingsLoading(true); // Set loading to true when fetching listings
+			if (showListings) {
+				setUserListings([])
+			} else {
+				setShowListingsError(false)
+				const res = await fetch(userId ? `/api/user/listings/${userId}` : `/api/user/listings/${currentUser._id}`)
+				const data = await res.json()
+				if (data.success === false) {
+					setShowListingsError(true)
+					return
+				}
+				setUserListings(data)
 			}
-			console.log(data);
-			setUserListings(data)
+			setShowListings(!showListings)
 		} catch (error) {
 			setShowListingsError(true)
+		} finally {
+			setListingsLoading(false); // Set loading to false when fetching is complete
 		}
 	}
 
@@ -221,21 +230,37 @@ export default function Profile() {
 					</Link>
 				)}
 			</form>
-			{userId ? (<div className='flex justify-around mt-5'>
-				<span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>Delete Account</span>
-			</div>) : (<div className='flex justify-between mt-5'>
-				<span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>Delete Account</span>
-				<span onClick={handleSignOut} className='text-red-700 cursor-pointer'>Sign Out</span>
-			</div>)}
-
+			<div className='flex justify-between mt-5'>
+				{!userId && currentUser.isAdmin ? '' : (
+					<button onClick={handleShowListings} className='text-green-700'>
+						{showListings ? 'Hide Listings' : 'Show Listings'}
+					</button>
+				)}
+				{userId ? (
+					<span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>Delete Account</span>
+				) : (
+					<>
+						<span onClick={handleSignOut} className='text-red-700 cursor-pointer'>Sign Out</span>
+						<span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>Delete Account</span>
+					</>
+				)}
+			</div>
 
 			<p className='text-red-700 mt-5'>{error ? error : ''}</p>
 			<p className='text-green-700 mt-5'>{updateSuccess ? 'User Updated Succesfully' : ''}</p>
-			{!userId && currentUser.isAdmin ? '' : (<button onClick={handleShowListings} className='text-green-700 w-full'>Show Listing</button>)}
 			<p className='text-red-700 mt-5'>
 				{showListingsError ? 'Error in showing listings' : ''}
 			</p>
-			{userListings && userListings.length > 0 &&
+			{listingsLoading ? (
+				<div className="flex justify-center items-center h-32">
+					<img
+						src="https://global.discourse-cdn.com/sitepoint/original/3X/e/3/e352b26bbfa8b233050087d6cb32667da3ff809c.gif"
+						alt="Loading..."
+						className="h-8 w-8 inline-block animate-spin"
+					/>
+				</div>
+			) : (
+				userListings && userListings.length > 0 &&
 				<div className='flex flex-col gap-4'>
 					<h1 className='text-center text-2xl font-semibold'>
 						{currentUser.isAdmin ? 'User' : 'Your'} Listings
@@ -255,7 +280,7 @@ export default function Profile() {
 						</div>
 					</div>)}
 				</div>
-			}
+			)}
 		</div>
 	)
 }

@@ -157,13 +157,19 @@ export default function Search() {
                 </form>
             </div>
             <div className='flex-1'>
-                <h1 className='text-3xl font-semibold border-b pl-4 pb-4 text-slate-700 mt-5'>Listing Results</h1>
+                <h1 className='text-3xl font-semibold pl-4 pb-4 text-slate-700 mt-5'>Property Listings</h1>
                 <div className="p-7 flex flex-wrap gap-4">
                     {!loading && listings.length === 0 && (
-                        <p className='text-xl text-slate-700'>No listing found!</p>
+                        <p className='text-xl text-slate-700 w-full text-center'>No listing found!</p>
                     )}
                     {loading && (
-                        <p className="text-xl text-slate-700 text-center w-full">Loading...</p>
+                        <div className="flex justify-center items-center h-32 w-full">
+                        <img
+                            src="https://global.discourse-cdn.com/sitepoint/original/3X/e/3/e352b26bbfa8b233050087d6cb32667da3ff809c.gif"
+                            alt="Loading..."
+                            className="h-8 w-8 inline-block animate-spin"
+                        />
+                    </div>
                     )}
                     {!loading && listings && listings.map(listing => (
                         <ListingItem key={listing._id} listing={listing} />
